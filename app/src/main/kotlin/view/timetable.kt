@@ -18,6 +18,7 @@ import kotlinx.html.role
 import kotlinx.html.span
 import kotlinx.html.svg
 import kotlinx.html.time
+import repository.Timetable
 
 data class Event(
     val startTime: LocalTime,
@@ -27,32 +28,10 @@ data class Event(
     val day: Int,
 )
 
-fun FlowContent.timetable() = div {
+fun FlowContent.timetable(timetable: Timetable) = div {
     val times = (0..23).map { LocalTime.of(it, 0) }
 
-    val events = listOf(
-        Event(
-            LocalTime.of(6, 0),
-            LocalTime.of(7, 0),
-            "Breakfast 2",
-            "blue",
-            2,
-        ),
-        Event(
-            LocalTime.of(9, 30),
-            LocalTime.of(10, 45),
-            "Flight to Paris",
-            "pink",
-            2,
-        ),
-        Event(
-            LocalTime.of(10, 0),
-            LocalTime.of(12, 0),
-            "Meeting with design team at Disney",
-            "gray",
-            5,
-        ),
-    )
+    val events = timetable.events
 
     val min = events.minOf { it.startTime }
     val max = events.maxOf { it.endTime }

@@ -27,7 +27,7 @@ data class Event(
     val day: Int,
 )
 
-fun FlowContent.page() = div {
+fun FlowContent.timetable() = div {
     val times = (0..23).map { LocalTime.of(it, 0) }
 
     val events = listOf(
@@ -71,15 +71,14 @@ fun FlowContent.page() = div {
                 "border-gray-200",
                 "px-6",
                 "py-4",
-                "hidden"
             )
-            //                                                                                                                     ^ hidden in-case I want a title later
+            // ^ hidden in-case I want a title later
             h1 {
-                classes = setOf("text-base", "font-semibold", "text-gray-900", "hidden")
+                classes = setOf("text-base", "font-semibold", "text-gray-900")
                 //                                                              ^ hidden in-case I want a title later
                 time {
                     attributes["datetime"] = "2022-01"
-                    +"January 2022"
+                    +"Example Timetable"
                 }
             }
             div {
@@ -451,10 +450,12 @@ fun FlowContent.page() = div {
                                 "sm:grid-cols-7",
                                 "sm:pr-8"
                             )
-                            attributes["style"] = "grid-template-rows: 1.75rem repeat(${factor * 6}, minmax(0, 1fr)) auto"
+                            attributes["style"] =
+                                "grid-template-rows: 1.75rem repeat(${factor * 6}, minmax(0, 1fr)) auto"
                             events.map {
                                 val factor = 12
-                                val gridRow = 2 + (it.startTime.hour - filteredTimes.first().hour) * factor + (it.startTime.minute * factor / 60)
+                                val gridRow =
+                                    2 + (it.startTime.hour - filteredTimes.first().hour) * factor + (it.startTime.minute * factor / 60)
                                 val span =
                                     (((it.endTime.hour.toFloat() + it.endTime.minute.toFloat() / 60) - (it.startTime.hour.toFloat() + it.startTime.minute.toFloat() / 60)) * factor).toInt()
 

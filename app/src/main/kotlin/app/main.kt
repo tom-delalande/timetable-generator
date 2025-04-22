@@ -4,21 +4,22 @@ import io.ktor.server.application.Application
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.html.respondHtml
 import io.ktor.server.netty.Netty
+import io.ktor.server.response.respondFile
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
-import java.time.LocalTime
+import java.io.File
 import kotlinx.html.FlowContent
 import kotlinx.html.HTML
 import kotlinx.html.body
 import kotlinx.html.classes
 import kotlinx.html.div
-import kotlinx.html.h2
 import kotlinx.html.head
 import kotlinx.html.id
 import kotlinx.html.script
 import kotlinx.html.title
-import view.page
+import view.home
+import view.timetable
 
 fun main() {
     embeddedServer(Netty, port = 9090) {
@@ -29,25 +30,29 @@ fun main() {
 fun Application.endpoints() {
     routing {
         index()
+        timetable()
+        downloadExample()
     }
 }
-
-data class Event(
-    val startTime: LocalTime,
-    val endTime: LocalTime,
-    val title: String,
-)
-
-val event = listOf<Event>()
-
-val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 fun Routing.index() = get("/") {
     call.respondHtml {
         index {
-            page()
+            home()
         }
     }
+}
+
+fun Routing.timetable() = get("/timetable") {
+    call.respondHtml {
+        index {
+            timetable()
+        }
+    }
+}
+
+fun Routing.downloadExample() = get("/timetable-converter-example.csv") {
+    call.respondFile(File("timetable-converter-example.csv"))
 }
 
 fun HTML.index(page: FlowContent.() -> Unit) {

@@ -9,6 +9,7 @@ interface Repository {
 
 data class Timetable(
     val events: List<Event>,
+    val title: String? = null,
 )
 
 object InMemory : Repository {

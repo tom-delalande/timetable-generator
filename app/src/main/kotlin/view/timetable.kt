@@ -1,7 +1,9 @@
 package view
 
+import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.a
@@ -18,6 +20,7 @@ import kotlinx.html.role
 import kotlinx.html.span
 import kotlinx.html.svg
 import kotlinx.html.time
+import kotlinx.html.title
 import repository.Timetable
 
 data class Event(
@@ -28,12 +31,45 @@ data class Event(
     val day: Int,
 )
 
+data class Collisions(
+    val num: Int,
+    val offset: Int,
+)
+
+data class RelativeEvent(
+    val event: Event,
+    val order: Int,
+    val halved: Collisions,
+    val indent: Int,
+)
+
 fun FlowContent.timetable(timetable: Timetable) = div {
     val times = (0..23).map { LocalTime.of(it, 0) }
 
     val events = timetable.events
 
-    val min = events.minOf { it.startTime }
+    val relativeEvents = events.sortedWith(compareBy({ it.day }, { it.startTime }))
+        .mapIndexed { index, event ->
+            val indent =
+                events.count { it.startTime < event.startTime && event.startTime < it.endTime && it.day == event.day }
+            val collisions = events.filter { other ->
+                (event.startTime >= other.startTime && event.startTime <= other.startTime.plusMinutes(30) ||
+                        other.startTime >= event.startTime && other.startTime <= event.startTime.plusMinutes(30)) &&
+                        event.day == other.day
+            }.sortedByDescending { Duration.between(it.startTime, it.endTime) }
+
+            val offset = collisions.indexOf(event)
+            val num = collisions.filter { it.endTime >= event.endTime }.size
+
+            RelativeEvent(
+                event,
+                index,
+                Collisions(num, offset),
+                indent,
+            )
+        }
+
+    val min = events.minOf { it.startTime }.truncatedTo(ChronoUnit.HOURS)
     val max = events.maxOf { it.endTime }
     val filteredTimes = times.filter { it in min..max }
     val factor = filteredTimes.size * 2
@@ -52,12 +88,14 @@ fun FlowContent.timetable(timetable: Timetable) = div {
                 "py-4",
             )
             // ^ hidden in-case I want a title later
-            h1 {
-                classes = setOf("text-base", "font-semibold", "text-gray-900")
-                //                                                              ^ hidden in-case I want a title later
-                time {
-                    attributes["datetime"] = "2022-01"
-                    +"Example Timetable"
+            if (timetable.title != null) {
+                h1 {
+                    classes = setOf("text-base", "font-semibold", "text-gray-900")
+                    //                                                              ^ hidden in-case I want a title later
+                    time {
+                        attributes["datetime"] = "2022-01"
+                        +timetable.title
+                    }
                 }
             }
             div {
@@ -431,40 +469,59 @@ fun FlowContent.timetable(timetable: Timetable) = div {
                             )
                             attributes["style"] =
                                 "grid-template-rows: 1.75rem repeat(${factor * 6}, minmax(0, 1fr)) auto"
-                            events.map {
+                            relativeEvents.map { (event, index, collisions, inset) ->
                                 val factor = 12
                                 val gridRow =
-                                    2 + (it.startTime.hour - filteredTimes.first().hour) * factor + (it.startTime.minute * factor / 60)
+                                    2 + (event.startTime.hour - filteredTimes.first().hour) * factor + (event.startTime.minute * factor / 60)
                                 val span =
-                                    (((it.endTime.hour.toFloat() + it.endTime.minute.toFloat() / 60) - (it.startTime.hour.toFloat() + it.startTime.minute.toFloat() / 60)) * factor).toInt()
+                                    (((event.endTime.hour.toFloat() + event.endTime.minute.toFloat() / 60) - (event.startTime.hour.toFloat() + event.startTime.minute.toFloat() / 60)) * factor).toInt()
 
                                 li {
-                                    classes = setOf("relative", "mt-px", "flex", "sm:col-start-${it.day + 1}")
+                                    classes = setOf(
+                                        "relative",
+                                        "mt-px",
+                                        "flex",
+                                        "sm:col-start-${event.day + 1}",
+                                        "overflow-hidden",
+                                        "hover:overflow-visible",
+                                        "z-[$index]",
+                                        "hover:z-[10000]",
+                                        "w-1/${collisions.num}",
+                                        "translate-x-[${collisions.offset * 100}%]",
+                                        "hover:w-full",
+                                        "hover:translate-x-[0]",
+                                    )
                                     attributes["style"] = "grid-row: $gridRow / span $span"
-                                    a {
-                                        href = "#"
+                                    div {
                                         classes = setOf(
                                             "group",
                                             "absolute",
-                                            "inset-1",
+                                            "inset-${inset}",
+                                            "end-1",
                                             "flex",
                                             "flex-col",
-                                            "overflow-y-auto",
                                             "rounded-lg",
-                                            "bg-${it.colour}-50",
+                                            "bg-${event.colour}-50",
                                             "p-2",
                                             "text-xs/5",
-                                            "hover:bg-${it.colour}-100"
+                                            "hover:bg-${event.colour}-100",
+                                            "hover:min-h-fit",
+                                            "hover:h-full",
+                                            "overflow-hidden",
                                         )
                                         p {
-                                            classes = setOf("order-1", "font-semibold", "text-${it.colour}-700")
-                                            +it.title
+                                            classes = setOf("font-semibold", "text-${event.colour}-700")
+                                            +event.title
                                         }
                                         p {
                                             classes =
-                                                setOf("text-${it.colour}-500", "group-hover:text-${it.colour}-700")
+                                                setOf(
+                                                    "text-${event.colour}-500",
+                                                    "group-hover:text-${event.colour}-700"
+                                                )
                                             time {
-                                                +it.startTime.format(DateTimeFormatter.ofPattern("h:mm a")).uppercase()
+                                                +event.startTime.format(DateTimeFormatter.ofPattern("h:mm a"))
+                                                    .uppercase()
                                             }
                                         }
                                     }

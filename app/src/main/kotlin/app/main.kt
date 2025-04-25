@@ -2,23 +2,18 @@ package app
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
-import io.ktor.http.content.streamProvider
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.html.respondHtml
 import io.ktor.server.netty.Netty
-import io.ktor.server.request.receiveChannel
 import io.ktor.server.request.receiveMultipart
-import io.ktor.server.response.header
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondFile
-import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.util.cio.writeChannel
 import io.ktor.utils.io.copyAndClose
-import io.ktor.utils.io.readUTF8Line
 import java.io.File
 import java.time.LocalTime
 import java.util.UUID
@@ -38,6 +33,7 @@ import repository.Timetable
 import view.Event
 import view.home
 import view.timetable
+import view.timetableDocs
 
 fun main() {
     val repository = InMemory
@@ -48,6 +44,7 @@ fun main() {
             downloadExample()
             upload(repository)
             timetable(repository)
+            test()
         }
     }.start(wait = true)
 }
@@ -60,29 +57,21 @@ fun Routing.index() = get("/") {
     }
 }
 
-val exampleEvents = listOf(
-    Event(
-        LocalTime.of(6, 0),
-        LocalTime.of(7, 0),
-        "Breakfast 2",
-        "blue",
-        2,
-    ),
-    Event(
-        LocalTime.of(9, 30),
-        LocalTime.of(10, 45),
-        "Flight to Paris",
-        "pink",
-        2,
-    ),
-    Event(
-        LocalTime.of(10, 0),
-        LocalTime.of(12, 0),
-        "Meeting with design team at Disney",
-        "gray",
-        5,
-    ),
-)
+fun Routing.test() = get("/test") {
+    val testFiles = File("timetables/test").listFiles().map { it.toEvents() }
+    call.respondHtml {
+        index {
+            div {
+                classes = setOf("flex", "flex-col", "gap-2")
+                testFiles.map {
+                    timetable(Timetable(it))
+                }
+            }
+        }
+    }
+}
+
+val exampleEvents = File("timetables/timetable-converter-example.csv").toEvents()
 
 fun Routing.timetable(repository: Repository) = get("/timetable/{id}") {
     val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
@@ -104,11 +93,6 @@ fun Routing.downloadExample() = get("/timetable-converter-example.csv") {
     call.respondFile(File("timetable-converter-example.csv"))
 }
 
-private val csvFormat = CSVFormat.DEFAULT.builder()
-    .setHeader("Day", "Start", "End", "Title", "Colour")
-    .setSkipHeaderRecord(true)
-    .get()
-
 fun Routing.upload(repository: Repository) = post("/upload") {
     val file = File.createTempFile("aaa", "csv")
 
@@ -117,8 +101,25 @@ fun Routing.upload(repository: Repository) = post("/upload") {
     if (part !is PartData.FileItem) return@post call.respond(HttpStatusCode.BadRequest)
     part.provider().copyAndClose(file.writeChannel())
 
-    val parser = csvFormat.parse(file.reader())
-    val events = parser.records.map {
+    val events = file.toEvents()
+    val id = UUID.randomUUID().toString()
+    repository.save(id, Timetable(events))
+    call.respondHtml {
+        body {
+            timetable(Timetable(events))
+            timetableDocs(id)
+        }
+    }
+}
+
+fun File.toEvents(): List<Event> {
+    val csvFormat = CSVFormat.DEFAULT.builder()
+        .setHeader("Day", "Start", "End", "Title", "Colour")
+        .setSkipHeaderRecord(true)
+        .get()
+
+    val parser = csvFormat.parse(reader())
+    return parser.records.map {
         Event(
             day = it.get("Day").let {
                 when (it) {
@@ -127,21 +128,21 @@ fun Routing.upload(repository: Repository) = post("/upload") {
                     "Wednesday" -> 2
                     "Thursday" -> 3
                     "Friday" -> 4
-                    "Saturday" -> 4
-                    "Sunday" -> 4
+                    "Saturday" -> 5
+                    "Sunday" -> 6
                     else -> 0
                 }
             },
             startTime = it.get("Start").let { LocalTime.parse(it) },
             endTime = it.get("End").let { LocalTime.parse(it) },
             title = it.get("Title"),
-            colour = it.get("Colour"),
+            colour = when (it.get("Colour")) {
+                "black" -> "stone"
+                else -> it.get("Colour")
+            },
         )
     }
-    val id = UUID.randomUUID().toString()
-    repository.save(id, Timetable(events))
-    call.response.header("HX-Redirect", "/timetable/$id")
-    call.respond(HttpStatusCode.OK)
+
 }
 
 fun HTML.index(page: FlowContent.() -> Unit) {

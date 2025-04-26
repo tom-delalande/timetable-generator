@@ -20,7 +20,6 @@ import kotlinx.html.role
 import kotlinx.html.span
 import kotlinx.html.svg
 import kotlinx.html.time
-import kotlinx.html.title
 import repository.Timetable
 
 data class Event(

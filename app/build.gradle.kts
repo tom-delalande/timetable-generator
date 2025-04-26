@@ -35,4 +35,6 @@ dependencies {
     implementation("io.ktor:ktor-server-websockets:$ktorVersion")
     implementation("org.slf4j:slf4j-simple:2.0.0-beta1")
     implementation("org.apache.commons:commons-csv:1.14.0")
+
+    implementation("com.stripe:stripe-java:29.0.0")
 }

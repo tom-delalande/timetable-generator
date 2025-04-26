@@ -1,21 +1,27 @@
 package app
 
+import hero
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.html.respondHtml
 import io.ktor.server.netty.Netty
 import io.ktor.server.request.receiveMultipart
+import io.ktor.server.response.header
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondFile
+import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.ktor.util.cio.writeChannel
 import io.ktor.utils.io.copyAndClose
 import java.io.File
+import java.time.Instant
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 import kotlinx.html.FlowContent
 import kotlinx.html.HTML
@@ -27,23 +33,27 @@ import kotlinx.html.id
 import kotlinx.html.script
 import kotlinx.html.title
 import org.apache.commons.csv.CSVFormat
-import repository.InMemory
-import repository.Repository
+import repository.PaymentRepository
+import repository.TimeTableRepository
 import repository.Timetable
 import view.Event
-import view.home
+import view.components.error
+import view.sections.features
 import view.timetable
 import view.timetableDocs
 
 fun main() {
-    val repository = InMemory
+    checkEnv()
+    val timeTableRepository = TimeTableRepository.InMemory
+    val paymentRepository = PaymentRepository.InMemory
 
     embeddedServer(Netty, port = 9090) {
         routing {
             index()
             downloadExample()
-            upload(repository)
-            timetable(repository)
+            upload(timeTableRepository)
+            timetable(timeTableRepository, paymentRepository)
+            payments(paymentRepository, timeTableRepository)
             test()
         }
     }.start(wait = true)
@@ -52,7 +62,18 @@ fun main() {
 fun Routing.index() = get("/") {
     call.respondHtml {
         index {
-            home()
+            hero()
+            div {
+                classes = setOf("relative overflow-hidden pt-16", "pb-64")
+                div {
+                    classes = setOf("mx-auto max-w-7xl px-6 lg:px-8")
+                    div {
+                        classes = setOf("mb-[-12%]", "rounded-xl", "shadow-2xl", "ring-1", "ring-gray-900/10", "max-h-[600px]", "overflow-hidden")
+                        timetable(Timetable(exampleEvents))
+                    }
+                }
+            }
+            features()
         }
     }
 }
@@ -73,44 +94,127 @@ fun Routing.test() = get("/test") {
 
 val exampleEvents = File("timetables/timetable-converter-example.csv").toEvents()
 
-fun Routing.timetable(repository: Repository) = get("/timetable/{id}") {
-    val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-    val timetable = when (id) {
-        "example" -> Timetable(
-            events = exampleEvents
-        )
+fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepository: PaymentRepository) =
+    route("/timetable/{id}") {
+        get {
+            val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val timetable = when (id) {
+                "example" -> Timetable(events = exampleEvents)
+                else -> timeTableRepository.load(UUID.fromString(id))
+                    ?: return@get call.respond(HttpStatusCode.BadRequest)
+            }
 
-        else -> repository.load(id) ?: return@get call.respond(HttpStatusCode.BadRequest)
-    }
-    call.respondHtml {
-        index {
-            timetable(timetable)
+            val paid = id == "example" || paymentRepository.check(UUID.fromString(id))
+            val isTrialPeriod = timetable.createdAt.isAfter(Instant.now().minus(7, ChronoUnit.DAYS))
+                    && Environment.trialEnabled
+            if (isTrialPeriod || paid) {
+                return@get call.respondHtml {
+                    index {
+                        timetable(timetable)
+                    }
+                }
+            }
+
+            // TODO: Add error page when with CTA for purchase
+            call.respondHtml {
+                +"This timetable is no longer available. You can re-enabled it by enabling hosting"
+            }
+        }
+        get("/edit") {
+            val id =
+                call.parameters["id"]?.let { UUID.fromString(it) } ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val timetable = timeTableRepository.load(id) ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+            call.respondHtml {
+                index {
+                    timetable(timetable)
+                    timetableDocs(id)
+                }
+            }
         }
     }
-}
 
 fun Routing.downloadExample() = get("/timetable-converter-example.csv") {
     call.respondFile(File("timetable-converter-example.csv"))
 }
 
-fun Routing.upload(repository: Repository) = post("/upload") {
+fun Routing.upload(timeTableRepository: TimeTableRepository) = post("/upload") {
     val file = File.createTempFile("aaa", "csv")
 
     val multipart = call.receiveMultipart()
-    val part = multipart.readPart() ?: return@post call.respond(HttpStatusCode.BadRequest)
-    if (part !is PartData.FileItem) return@post call.respond(HttpStatusCode.BadRequest)
-    part.provider().copyAndClose(file.writeChannel())
-
-    val events = file.toEvents()
-    val id = UUID.randomUUID().toString()
-    repository.save(id, Timetable(events))
-    call.respondHtml {
+    val part = multipart.readPart() ?: return@post call.respondHtml {
         body {
-            timetable(Timetable(events))
-            timetableDocs(id)
+            error("Failed to upload CSV file", "Are you sure you uploaded a file?")
         }
     }
+
+    if (part !is PartData.FileItem) return@post call.respondHtml {
+        body {
+            error("Failed to upload CSV file", "Are you sure you uploaded a file?")
+        }
+    }
+
+    val events = try {
+        part.provider().copyAndClose(file.writeChannel())
+        file.toEvents()
+    } catch (exception: Exception) {
+        return@post call.respondHtml {
+            body {
+                error("Failed to process CSV file", "Double check the template provided")
+            }
+        }
+    }
+
+    val id = UUID.randomUUID()
+    timeTableRepository.save(id, Timetable(events))
+
+    call.response.header("HX-Redirect", "/timetable/${id}/edit")
+    call.respond(HttpStatusCode.OK)
 }
+
+fun Routing.payments(paymentRepository: PaymentRepository, timeTableRepository: TimeTableRepository) =
+    route("/payments") {
+        get("/purchase/timetable/{id}") {
+            val timetableId =
+                call.parameters["id"]?.let { UUID.fromString(it) } ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val paymentId = UUID.randomUUID()
+            paymentRepository.start(timetableId, paymentId)
+
+            val sessionUrl = Payments.createSession(paymentId, timetableId)
+            call.respondRedirect(sessionUrl.url)
+        }
+
+        get("/success/payment/{id}") {
+            val paymentId = call.parameters["id"]?.let { UUID.fromString(it) } ?: return@get call.respond(
+                HttpStatusCode.BadRequest,
+                "paymentId is required"
+            )
+            val timetableId = paymentRepository.get(paymentId) ?: return@get call.respond(
+                HttpStatusCode.BadRequest,
+                "No timetableId found for payment id $paymentId"
+            )
+            val timetable = timeTableRepository.load(timetableId) ?: return@get call.respond(
+                HttpStatusCode.BadRequest,
+                "No timetable found for id $timetableId"
+            )
+            paymentRepository.success(paymentId)
+            call.respondHtml {
+                body {
+                    timetable(timetable)
+                    timetableDocs(timetableId)
+                }
+            }
+        }
+
+        get("/cancel/timetable/{id}") {
+            val timetableId =
+                call.parameters["id"]?.let { UUID.fromString(it) } ?: return@get call.respond(HttpStatusCode.BadRequest)
+            paymentRepository.cancel(timetableId)
+            call.respondHtml {
+                +"Cancelled"
+            }
+        }
+    }
 
 fun File.toEvents(): List<Event> {
     val csvFormat = CSVFormat.DEFAULT.builder()

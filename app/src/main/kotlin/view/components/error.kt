@@ -1,11 +1,13 @@
 package view.components
 
 import kotlinx.html.FlowContent
+import kotlinx.html.a
 import kotlinx.html.classes
 import kotlinx.html.div
 import kotlinx.html.h3
 import kotlinx.html.h4
 import kotlinx.html.onClick
+import kotlinx.html.p
 import kotlinx.html.svg
 import path
 
@@ -45,3 +47,5 @@ fun FlowContent.error(title: String, subtitle: String) = div {
         }
     }
 }
+
+

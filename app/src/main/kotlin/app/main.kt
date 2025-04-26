@@ -38,6 +38,7 @@ import repository.TimeTableRepository
 import repository.Timetable
 import view.Event
 import view.components.error
+import view.sections.docs
 import view.sections.features
 import view.timetable
 import view.timetableDocs
@@ -68,7 +69,15 @@ fun Routing.index() = get("/") {
                 div {
                     classes = setOf("mx-auto max-w-7xl px-6 lg:px-8")
                     div {
-                        classes = setOf("mb-[-12%]", "rounded-xl", "shadow-2xl", "ring-1", "ring-gray-900/10", "max-h-[600px]", "overflow-hidden")
+                        classes = setOf(
+                            "mb-[-12%]",
+                            "rounded-xl",
+                            "shadow-2xl",
+                            "ring-1",
+                            "ring-gray-900/10",
+                            "max-h-[600px]",
+                            "overflow-hidden"
+                        )
                         timetable(Timetable(exampleEvents))
                     }
                 }
@@ -99,12 +108,13 @@ fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepositor
         get {
             val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
             val timetable = when (id) {
+                "00000000-0000-0000-0000-000000000000",
                 "example" -> Timetable(events = exampleEvents)
                 else -> timeTableRepository.load(UUID.fromString(id))
                     ?: return@get call.respond(HttpStatusCode.BadRequest)
             }
 
-            val paid = id == "example" || paymentRepository.check(UUID.fromString(id))
+            val paid = id == "example" || id == "00000000-0000-0000-0000-000000000000" || paymentRepository.check(UUID.fromString(id))
             val isTrialPeriod = timetable.createdAt.isAfter(Instant.now().minus(7, ChronoUnit.DAYS))
                     && Environment.trialEnabled
             if (isTrialPeriod || paid) {
@@ -121,14 +131,31 @@ fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepositor
             }
         }
         get("/edit") {
-            val id =
-                call.parameters["id"]?.let { UUID.fromString(it) } ?: return@get call.respond(HttpStatusCode.BadRequest)
-            val timetable = timeTableRepository.load(id) ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val timetable = when (id) {
+                "00000000-0000-0000-0000-000000000000",
+                "example",
+                    -> Timetable(events = exampleEvents)
+
+                else -> timeTableRepository.load(UUID.fromString(id))
+                    ?: return@get call.respond(HttpStatusCode.BadRequest)
+            }
+
+
 
             call.respondHtml {
                 index {
-                    timetable(timetable)
-                    timetableDocs(id)
+                    div {
+                        classes = setOf("relative overflow-hidden py-16")
+                        div {
+                            classes = setOf("mx-auto max-w-7xl px-6 lg:px-8")
+                            div {
+                                classes = setOf("rounded-xl", "shadow-2xl", "ring-1", "ring-gray-900/10", "pb-4")
+                                timetable(timetable)
+                            }
+                        }
+                    }
+                    docs(id)
                 }
             }
         }

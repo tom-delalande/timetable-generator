@@ -1,13 +1,11 @@
 package view.sections
 
 import kotlinx.html.FlowContent
-import kotlinx.html.a
 import kotlinx.html.classes
 import kotlinx.html.div
 import kotlinx.html.dl
 import kotlinx.html.h2
 import kotlinx.html.p
-import kotlinx.html.span
 import kotlinx.html.svg
 import path
 

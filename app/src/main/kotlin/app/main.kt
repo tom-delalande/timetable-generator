@@ -39,9 +39,12 @@ import repository.Timetable
 import view.Event
 import view.components.error
 import view.sections.docs
+import view.sections.faq
 import view.sections.features
+import view.sections.footer
 import view.timetable
 import view.timetableDocs
+import view.timetableWithBorder
 
 fun main() {
     checkEnv()
@@ -83,6 +86,7 @@ fun Routing.index() = get("/") {
                 }
             }
             features()
+            footer()
         }
     }
 }
@@ -107,20 +111,29 @@ fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepositor
     route("/timetable/{id}") {
         get {
             val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val embedded = call.queryParameters["embedded"] == "true"
             val timetable = when (id) {
                 "00000000-0000-0000-0000-000000000000",
-                "example" -> Timetable(events = exampleEvents)
+                "example",
+                    -> Timetable(events = exampleEvents)
+
                 else -> timeTableRepository.load(UUID.fromString(id))
                     ?: return@get call.respond(HttpStatusCode.BadRequest)
             }
 
-            val paid = id == "example" || id == "00000000-0000-0000-0000-000000000000" || paymentRepository.check(UUID.fromString(id))
+            val paid = id == "example" || id == "00000000-0000-0000-0000-000000000000" || paymentRepository.check(
+                UUID.fromString(id)
+            )
             val isTrialPeriod = timetable.createdAt.isAfter(Instant.now().minus(7, ChronoUnit.DAYS))
                     && Environment.trialEnabled
             if (isTrialPeriod || paid) {
                 return@get call.respondHtml {
                     index {
-                        timetable(timetable)
+                        if (embedded) {
+                            timetable(timetable)
+                        } else {
+                            timetableWithBorder(timetable)
+                        }
                     }
                 }
             }
@@ -141,8 +154,6 @@ fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepositor
                     ?: return@get call.respond(HttpStatusCode.BadRequest)
             }
 
-
-
             call.respondHtml {
                 index {
                     div {
@@ -156,6 +167,7 @@ fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepositor
                         }
                     }
                     docs(id)
+                    faq()
                 }
             }
         }
@@ -230,15 +242,6 @@ fun Routing.payments(paymentRepository: PaymentRepository, timeTableRepository: 
                     timetable(timetable)
                     timetableDocs(timetableId)
                 }
-            }
-        }
-
-        get("/cancel/timetable/{id}") {
-            val timetableId =
-                call.parameters["id"]?.let { UUID.fromString(it) } ?: return@get call.respond(HttpStatusCode.BadRequest)
-            paymentRepository.cancel(timetableId)
-            call.respondHtml {
-                +"Cancelled"
             }
         }
     }

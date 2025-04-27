@@ -532,6 +532,15 @@ fun FlowContent.timetable(timetable: Timetable) = div {
             }
         }
     }
+}
 
-
+fun FlowContent.timetableWithBorder(timetable: Timetable) = div {
+    classes = setOf("relative overflow-hidden py-16")
+    div {
+        classes = setOf("mx-auto max-w-7xl px-6 lg:px-8")
+        div {
+            classes = setOf("rounded-xl", "shadow-2xl", "ring-1", "ring-gray-900/10", "pb-4")
+            timetable(timetable)
+        }
+    }
 }

@@ -135,7 +135,7 @@ fun FlowContent.features() = div {
                             }
 
                         }
-                        +"Mobile First"
+                        +"Mobile Friendly"
                     }
                     div {
                         classes = setOf("mt-1", "flex", "flex-auto", "flex-col", "text-base/7", "text-gray-600")

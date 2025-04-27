@@ -1,14 +1,14 @@
 # Backlog
 
-- Add a way to edit/cancel existing timetables
 - Mobile Experience
-- Copy
+- Content Writing
   - Feature list
   - FAQ
   - Purchase CTA
 
 # Done
 
+- Add a way to edit/cancel existing timetables
 - Errors when fail to update
 - Add features list to bottom of main page
 - Redirect to new page after creation with payment button, download image and embed guide

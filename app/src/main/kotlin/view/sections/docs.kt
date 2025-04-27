@@ -1,20 +1,27 @@
 package view.sections
 
 import app.Environment
-import kotlinx.html.ButtonType
+import java.util.UUID
 import kotlinx.html.FlowContent
+import kotlinx.html.InputType
 import kotlinx.html.a
 import kotlinx.html.button
 import kotlinx.html.classes
 import kotlinx.html.div
+import kotlinx.html.form
 import kotlinx.html.h3
+import kotlinx.html.id
+import kotlinx.html.input
 import kotlinx.html.label
+import kotlinx.html.onChange
 import kotlinx.html.onClick
 import kotlinx.html.p
+import kotlinx.html.span
 import kotlinx.html.svg
 import path
+import repository.Timetable
 
-fun FlowContent.docs(id: String) = div {
+fun FlowContent.docs(timetable: Timetable, subscribed: Boolean) = div {
     classes = setOf("bg-white")
     div {
         classes = setOf("px-6", "py-4", "sm:px-6", "sm:py-8", "lg:px-8")
@@ -22,18 +29,19 @@ fun FlowContent.docs(id: String) = div {
             classes = setOf("mx-auto", "max-w-2xl", "text-center")
             div {
                 classes = setOf("mt-10", "flex", "flex-col", "items-start", "justify-center", "gap-6")
-//                div {
-//                    classes = setOf("self-center")
-//                    downloadImage(id)
-//                }
-                copyLink(id)
-                codeExample(id)
+                copyLink(timetable.publicId)
+                codeExample(timetable.publicId)
             }
             div {
                 classes = setOf("py-4")
-                warning(id)
+                if (!subscribed) {
+                    warning(timetable.privateId)
+                    upload(timetable.privateId)
+                } else {
+                    success(timetable.privateId)
+                    upload(timetable.privateId)
+                }
             }
-            // TODO: FAQ
         }
     }
 }
@@ -85,7 +93,63 @@ private fun FlowContent.downloadImage(id: String) = div {
     }
 }
 
-private fun FlowContent.copyLink(id: String) = div {
+private fun FlowContent.upload(privateId: UUID) = div {
+    label {
+        classes = setOf("block", "text-sm/6", "font-medium", "text-gray-900", "text-left")
+        +"Update"
+    }
+    div {
+        classes = setOf("flex", "items-center", "justify-left", "gap-x-6", "mt-2")
+        form {
+            attributes["hx-encoding"] = "multipart/form-data"
+            attributes["hx-post"] = "/upload?timetable=$privateId"
+            attributes["hx-target"] = "#error"
+            attributes["hx-swap"] = "innerHtml"
+
+            input {
+                id = "file-upload"
+                type = InputType.file
+                classes = setOf("hidden")
+                onChange = "this.form.requestSubmit()"
+                name = "file"
+            }
+        }
+
+        button {
+            onClick = "document.getElementById('file-upload').click()"
+            classes = setOf(
+                "rounded-md",
+                "bg-indigo-600",
+                "px-3.5",
+                "py-2.5",
+                "text-sm",
+                "font-semibold",
+                "text-white",
+                "shadow-xs",
+                "hover:bg-indigo-500",
+                "focus-visible:outline-2",
+                "focus-visible:outline-offset-2",
+                "focus-visible:outline-indigo-600"
+            )
+            +"Upload a CSV"
+        }
+        a {
+            href = "/timetable-converter-example.csv"
+            classes = setOf("text-sm/6", "font-semibold", "text-gray-900")
+            +"Download Template"
+            span {
+                attributes["aria-hidden"] = "true"
+                +"→"
+            }
+        }
+    }
+    div {
+        id = "error"
+        classes = setOf("relative", "h-0")
+    }
+}
+
+private fun FlowContent.copyLink(id: UUID) = div {
     label {
         classes = setOf("block", "text-sm/6", "font-medium", "text-gray-900", "text-left")
         +"URL"
@@ -153,7 +217,8 @@ private fun FlowContent.copyLink(id: String) = div {
                     path {
                         attributes["stroke-linecap"] = "round"
                         attributes["stroke-linejoin"] = "round"
-                        attributes["d"] = "M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+                        attributes["d"] =
+                            "M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
                     }
                 }
 
@@ -162,7 +227,7 @@ private fun FlowContent.copyLink(id: String) = div {
     }
 }
 
-private fun FlowContent.codeExample(id: String) = div {
+private fun FlowContent.codeExample(id: UUID) = div {
     label {
         classes = setOf("block", "text-sm/6", "font-medium", "text-gray-900", "text-left")
         +"Embedded"
@@ -209,7 +274,7 @@ private fun FlowContent.codeExample(id: String) = div {
     }
 }
 
-fun FlowContent.warning(id: String) = div {
+fun FlowContent.warning(id: UUID) = div {
     classes = setOf("rounded-md", "bg-yellow-50", "p-4", "my-4")
     div {
         classes = setOf("flex")
@@ -244,6 +309,42 @@ fun FlowContent.warning(id: String) = div {
                         classes = setOf("font-medium text-yellow-700 underline hover:text-yellow-600")
                         +"Upgrade to keep using it ($15 AUD per month)"
                     }
+                }
+            }
+        }
+    }
+}
+
+fun FlowContent.success(id: UUID) = div {
+    classes = setOf("rounded-md", "bg-green-50", "p-4")
+    div {
+        classes = setOf("flex")
+        div {
+            classes = setOf("shrink-0")
+            svg {
+                classes = setOf("size-5", "text-green-400")
+                attributes["viewbox"] = "0 0 20 20"
+                attributes["fill"] = "currentColor"
+                attributes["aria-hidden"] = "true"
+                attributes["data-slot"] = "icon"
+                path {
+                    attributes["fill-rule"] = "evenodd"
+                    attributes["d"] =
+                        "M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z"
+                    attributes["clip-rule"] = "evenodd"
+                }
+            }
+        }
+        div {
+            classes = setOf("ml-3", "text-left")
+            h3 {
+                classes = setOf("text-sm", "font-medium", "text-green-800")
+                +"Successfully subscribed"
+            }
+            div {
+                classes = setOf("mt-2", "text-sm", "text-green-700")
+                p {
+                    +"You can edit the timetable at any time by coming back to this URL"
                 }
             }
         }

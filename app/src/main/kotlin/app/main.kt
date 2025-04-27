@@ -36,6 +36,7 @@ import org.apache.commons.csv.CSVFormat
 import repository.PaymentRepository
 import repository.TimeTableRepository
 import repository.Timetable
+import repository.exampleTimetable
 import view.Event
 import view.components.error
 import view.sections.docs
@@ -43,7 +44,6 @@ import view.sections.faq
 import view.sections.features
 import view.sections.footer
 import view.timetable
-import view.timetableDocs
 import view.timetableWithBorder
 
 fun main() {
@@ -81,7 +81,7 @@ fun Routing.index() = get("/") {
                             "max-h-[600px]",
                             "overflow-hidden"
                         )
-                        timetable(Timetable(exampleEvents))
+                        timetable(exampleTimetable)
                     }
                 }
             }
@@ -98,7 +98,7 @@ fun Routing.test() = get("/test") {
             div {
                 classes = setOf("flex", "flex-col", "gap-2")
                 testFiles.map {
-                    timetable(Timetable(it))
+                    timetable(Timetable(UUID.randomUUID(), UUID.randomUUID(), it))
                 }
             }
         }
@@ -110,23 +110,23 @@ val exampleEvents = File("timetables/timetable-converter-example.csv").toEvents(
 fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepository: PaymentRepository) =
     route("/timetable/{id}") {
         get {
-            val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val publicId =
+                call.parameters["id"]?.let { UUID.fromString(it) } ?: return@get call.respond(HttpStatusCode.BadRequest)
             val embedded = call.queryParameters["embedded"] == "true"
-            val timetable = when (id) {
-                "00000000-0000-0000-0000-000000000000",
-                "example",
-                    -> Timetable(events = exampleEvents)
+            val timetable = when (publicId) {
+                UUID.fromString("00000000-0000-0000-0000-000000000000"),
+                    -> Timetable(publicId, publicId, events = exampleEvents)
 
-                else -> timeTableRepository.load(UUID.fromString(id))
+                else -> timeTableRepository.loadByPublicId(publicId)
                     ?: return@get call.respond(HttpStatusCode.BadRequest)
             }
+            val subscribed = isSubscribed(
+                timetable.privateId,
+                timetable,
+                paymentRepository
+            ) || publicId == UUID.fromString("00000000-0000-0000-0000-000000000000")
 
-            val paid = id == "example" || id == "00000000-0000-0000-0000-000000000000" || paymentRepository.check(
-                UUID.fromString(id)
-            )
-            val isTrialPeriod = timetable.createdAt.isAfter(Instant.now().minus(7, ChronoUnit.DAYS))
-                    && Environment.trialEnabled
-            if (isTrialPeriod || paid) {
+            if (subscribed) {
                 return@get call.respondHtml {
                     index {
                         if (embedded) {
@@ -144,15 +144,15 @@ fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepositor
             }
         }
         get("/edit") {
-            val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-            val timetable = when (id) {
-                "00000000-0000-0000-0000-000000000000",
-                "example",
-                    -> Timetable(events = exampleEvents)
-
-                else -> timeTableRepository.load(UUID.fromString(id))
+            val privateId =
+                call.parameters["id"]?.let { UUID.fromString(it) } ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val timetable = when (privateId) {
+                UUID.fromString("00000000-0000-0000-0000-000000000000") -> exampleTimetable
+                else -> timeTableRepository.loadByPrivateId(privateId)
                     ?: return@get call.respond(HttpStatusCode.BadRequest)
             }
+
+            val subscribed = paymentRepository.check(privateId)
 
             call.respondHtml {
                 index {
@@ -166,8 +166,10 @@ fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepositor
                             }
                         }
                     }
-                    docs(id)
-                    faq()
+                    docs(timetable, subscribed)
+                    if (!subscribed) {
+                        faq()
+                    }
                 }
             }
         }
@@ -204,18 +206,37 @@ fun Routing.upload(timeTableRepository: TimeTableRepository) = post("/upload") {
         }
     }
 
-    val id = UUID.randomUUID()
-    timeTableRepository.save(id, Timetable(events))
+    val existingPrivateId = call.queryParameters["timetable"]?.let { UUID.fromString(it) }
 
-    call.response.header("HX-Redirect", "/timetable/${id}/edit")
+    val privateId = if (existingPrivateId != null) {
+        val timetable = timeTableRepository.loadByPrivateId(existingPrivateId) ?: return@post call.respond(
+            HttpStatusCode.BadRequest
+        )
+        timeTableRepository.update(existingPrivateId, timetable.copy(events = events))
+        existingPrivateId
+    } else {
+        val privateId = UUID.randomUUID()
+        val publicId = UUID.randomUUID()
+        timeTableRepository.save(
+            Timetable(
+                privateId = privateId,
+                publicId = publicId,
+                events = events,
+            )
+        )
+        privateId
+    }
+
+    call.response.header("HX-Redirect", "/timetable/${privateId}/edit")
     call.respond(HttpStatusCode.OK)
 }
 
 fun Routing.payments(paymentRepository: PaymentRepository, timeTableRepository: TimeTableRepository) =
     route("/payments") {
-        get("/purchase/timetable/{id}") {
+        get("/purchase/timetable/{privateId}") {
             val timetableId =
-                call.parameters["id"]?.let { UUID.fromString(it) } ?: return@get call.respond(HttpStatusCode.BadRequest)
+                call.parameters["privateId"]?.let { UUID.fromString(it) }
+                    ?: return@get call.respond(HttpStatusCode.BadRequest)
             val paymentId = UUID.randomUUID()
             paymentRepository.start(timetableId, paymentId)
 
@@ -223,8 +244,8 @@ fun Routing.payments(paymentRepository: PaymentRepository, timeTableRepository: 
             call.respondRedirect(sessionUrl.url)
         }
 
-        get("/success/payment/{id}") {
-            val paymentId = call.parameters["id"]?.let { UUID.fromString(it) } ?: return@get call.respond(
+        get("/success/payment/{privateId}") {
+            val paymentId = call.parameters["privateId"]?.let { UUID.fromString(it) } ?: return@get call.respond(
                 HttpStatusCode.BadRequest,
                 "paymentId is required"
             )
@@ -232,17 +253,8 @@ fun Routing.payments(paymentRepository: PaymentRepository, timeTableRepository: 
                 HttpStatusCode.BadRequest,
                 "No timetableId found for payment id $paymentId"
             )
-            val timetable = timeTableRepository.load(timetableId) ?: return@get call.respond(
-                HttpStatusCode.BadRequest,
-                "No timetable found for id $timetableId"
-            )
             paymentRepository.success(paymentId)
-            call.respondHtml {
-                body {
-                    timetable(timetable)
-                    timetableDocs(timetableId)
-                }
-            }
+            call.respondRedirect("/timetable/$timetableId/edit")
         }
     }
 
@@ -294,4 +306,12 @@ fun HTML.index(page: FlowContent.() -> Unit) {
             page()
         }
     }
+}
+
+
+fun isSubscribed(privateId: UUID, timetable: Timetable, paymentRepository: PaymentRepository): Boolean {
+    val paid = paymentRepository.check(privateId)
+    val isTrialPeriod = timetable.createdAt.isAfter(Instant.now().minus(7, ChronoUnit.DAYS))
+            && Environment.trialEnabled
+    return paid || isTrialPeriod
 }

@@ -1,5 +1,10 @@
+@file:UseSerializers(
+    LocalTimeSerializer::class,
+)
+
 package view
 
+import app.LocalTimeSerializer
 import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -20,8 +25,11 @@ import kotlinx.html.role
 import kotlinx.html.span
 import kotlinx.html.svg
 import kotlinx.html.time
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import repository.Timetable
 
+@Serializable
 data class Event(
     val startTime: LocalTime,
     val endTime: LocalTime,

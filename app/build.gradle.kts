@@ -43,4 +43,11 @@ dependencies {
     implementation("ch.qos.logback:logback-core:1.5.13")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.5")
     implementation("com.logtail:logback-logtail:0.3.3")
+
+
+    // Data
+    implementation("org.flywaydb:flyway-core:11.3.4")
+    implementation("p6spy:p6spy:3.9.1")
+    implementation("org.xerial:sqlite-jdbc:3.49.1.0")
+    implementation("org.postgresql:postgresql:42.7.5")
 }

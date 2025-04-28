@@ -21,7 +21,7 @@ object Payments {
                 )
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
                 .setSuccessUrl("${Environment.baseUrl}/payments/success/payment/$paymentId")
-                .setCancelUrl("${Environment.baseUrl}/timetable/$timetableId/edit")
+                .setCancelUrl("${Environment.baseUrl}/payments/cancel/timetable/$timetableId")
                 .build()
         )
         return SessionUrl(session.url)

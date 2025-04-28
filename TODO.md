@@ -5,12 +5,10 @@ Marketing
   - Feature list
   - FAQ
   - Purchase CTA
-- Favicon
 - Updated template
 - SEO
 
 Engineering
-- Data Persistence
 - Enable Production
   - Stripe
   - Better Stack
@@ -29,3 +27,6 @@ Engineering
   - FAQ on edit page
 - Mobile Experience
 - Logging
+- Cancel
+- Data Persistence
+- Favicon

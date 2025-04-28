@@ -9,7 +9,6 @@ import io.ktor.server.html.respondHtml
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.request.receiveMultipart
-import io.ktor.server.request.userAgent
 import io.ktor.server.response.header
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondFile
@@ -33,6 +32,7 @@ import kotlinx.html.classes
 import kotlinx.html.div
 import kotlinx.html.head
 import kotlinx.html.id
+import kotlinx.html.link
 import kotlinx.html.script
 import kotlinx.html.title
 import org.apache.commons.csv.CSVFormat
@@ -41,6 +41,7 @@ import repository.PaymentRepository
 import repository.TimeTableRepository
 import repository.Timetable
 import repository.exampleTimetable
+import repository.migrate
 import view.Event
 import view.components.error
 import view.sections.docs
@@ -52,8 +53,10 @@ import view.timetableWithBorder
 
 fun main() {
     checkEnv()
-    val timeTableRepository = TimeTableRepository.InMemory
-    val paymentRepository = PaymentRepository.InMemory
+    val timeTableRepository = TimeTableRepository.SQL(Environment.dataSource)
+    val paymentRepository = PaymentRepository.SQL(Environment.dataSource)
+
+    migrate(Environment.dataSource)
 
     embeddedServer(Netty, port = 9090) {
         install(CallLogging) {
@@ -65,8 +68,9 @@ fun main() {
             downloadExample()
             upload(timeTableRepository)
             timetable(timeTableRepository, paymentRepository)
-            payments(paymentRepository, timeTableRepository)
+            payments(paymentRepository)
             test()
+            favicon()
         }
     }.start(wait = true)
 }
@@ -184,7 +188,7 @@ fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepositor
     }
 
 fun Routing.downloadExample() = get("/timetable-converter-example.csv") {
-    call.respondFile(File("timetable-converter-example.csv"))
+    call.respondFile(File("timetables/timetable-converter-example.csv"))
 }
 
 fun Routing.upload(timeTableRepository: TimeTableRepository) = post("/upload") {
@@ -239,7 +243,7 @@ fun Routing.upload(timeTableRepository: TimeTableRepository) = post("/upload") {
     call.respond(HttpStatusCode.OK)
 }
 
-fun Routing.payments(paymentRepository: PaymentRepository, timeTableRepository: TimeTableRepository) =
+fun Routing.payments(paymentRepository: PaymentRepository) =
     route("/payments") {
         get("/purchase/timetable/{privateId}") {
             val timetableId =
@@ -252,8 +256,8 @@ fun Routing.payments(paymentRepository: PaymentRepository, timeTableRepository: 
             call.respondRedirect(sessionUrl.url)
         }
 
-        get("/success/payment/{privateId}") {
-            val paymentId = call.parameters["privateId"]?.let { UUID.fromString(it) } ?: return@get call.respond(
+        get("/success/payment/{paymentId}") {
+            val paymentId = call.parameters["paymentId"]?.let { UUID.fromString(it) } ?: return@get call.respond(
                 HttpStatusCode.BadRequest,
                 "paymentId is required"
             )
@@ -263,6 +267,16 @@ fun Routing.payments(paymentRepository: PaymentRepository, timeTableRepository: 
             )
             paymentRepository.success(paymentId)
             call.respondRedirect("/timetable/$timetableId/edit")
+        }
+
+        get("/cancel/timetable/{timetablePrivateId}") {
+            val timetablePrivateId =
+                call.parameters["timetablePrivateId"]?.let { UUID.fromString(it) } ?: return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    "paymentId is required"
+                )
+            paymentRepository.cancel(timetablePrivateId)
+            call.respondRedirect("/timetable/$timetablePrivateId/edit")
         }
     }
 
@@ -303,10 +317,15 @@ fun HTML.index(page: FlowContent.() -> Unit) {
     classes = setOf("h-full", "bg-gray-100")
     head {
         title {
-            +"Timetable"
+            +"Timetable Generator"
         }
         script { src = "https://cdn.tailwindcss.com" }
         script { src = "https://unpkg.com/htmx.org@1.9.10" }
+        link {
+            rel = "icon"
+            href = "/favicon.svg"
+            type = "image/svg+xml"
+        }
     }
     body {
         div {
@@ -314,6 +333,10 @@ fun HTML.index(page: FlowContent.() -> Unit) {
             page()
         }
     }
+}
+
+fun Routing.favicon() = get("/favicon.svg") {
+    call.respondFile(File("assets/favicon.svg"))
 }
 
 

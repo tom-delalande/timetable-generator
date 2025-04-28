@@ -1,60 +1,22 @@
 Day,Start,End,Title,Colour
-Monday,09:30,10:30,Ladies Only Fitness and MUAY THAI,pink
-Wednesday,09:30,10:30,Ladies Only Fitness and MUAY THAI,pink
-Friday,09:30,10:30,Ladies Only Fitness and MUAY THAI,pink
-Monday,10:30,11:30,"Open Class All Levels
-MUAY THAI
-Cardio Strength",black
-Tuesday,10:30,11:30,"Open Class All Levels
-MUAY THAI
-Cardio Strength",black
-Tuesday,10:30,11:30,"Open Class All Levels
-MUAY THAI
-Cardio Strength",orange
-Tuesday,10:30,11:30,"Open Class All Levels
-MUAY THAI
-Cardio Strength",green
-Wednesday,10:30,11:30,"Open Class All Levels
-MUAY THAI
-Cardio Strength",black
-Thursday,10:30,11:30,"Open Class All Levels
-MUAY THAI
-Cardio Strength",black
-Friday,10:30,11:30,"Open Class All Levels
-MUAY THAI
-Cardio Strength",black
-Saturday,10:30,11:30,"Open Class All Levels
-MUAY THAI
-Cardio Strength",black
-Monday,16:30,17:15,"Kids Muay Thai
-Ages 4yrs to 7yrs",teal
-Tuesday,16:30,17:15,"Kids Muay Thai
-Ages 4yrs to 7yrs",teal
-Wednesday,16:30,17:15,"Kids Muay Thai
-Ages 4yrs to 7yrs",teal
-Thursday,16:30,17:15,"Kids Muay Thai
-Ages 4yrs to 7yrs",teal
-Monday,17:30,18:30,"Bigger Kids Muay Thai
-Ages 8yrs to 14yrs",green
-Tuesday,17:30,18:30,"Bigger Kids Muay Thai
-Ages 8yrs to 14yrs",green
-Wednesday,17:30,18:30,"Bigger Kids Muay Thai
-Ages 8yrs to 14yrs",green
-Thursday,17:30,18:30,"Bigger Kids Muay Thai
-Ages 8yrs to 14yrs",green
-Monday,16:00,19:00,Fighters Program,red
-Tuesday,16:00,19:00,Fighters Program,red
-Wednesday,16:00,19:00,Fighters Program,red
-Thursday,16:00,19:00,Fighters Program,red
-Friday,16:00,19:00,Fighters Program,red
-Monday,18:30,19:30,Adult Beginner and Advanced Muay Thai,black
-Tuesday,18:30,19:30,Adult Beginner and Advanced Muay Thai,black
-Wednesday,18:30,19:30,Adult Beginner and Advanced Muay Thai,black
-Thursday,18:30,19:30,Adult Beginner and Advanced Muay Thai,black
-Tuesday,11:30,12:05,ToneFit,orange
-Thursday,11:30,12:05,ToneFit,orange
-Friday,17:30,19:30,"Open Training Night
-All Members Welcome
-(PTs by Appointment)",yellow
-Saturday,09:30,10:30,"Weights Class
-All Welcome",yellow
+Monday,15:00,16:00,Kids Muay Thai,Red
+Tuesday,15:00,16:00,Kids Muay Thai,Red
+Wednesday,15:00,16:00,Kids Muay Thai,Red
+Thursday,15:00,16:00,Kids Muay Thai,Red
+Friday,15:00,16:00,Kids Muay Thai,Red
+Saturday,15:00,16:00,Kids Muay Thai,Red
+Monday,16:00,17:00,Teens BJJ,Blue
+Tuesday,16:00,17:00,Teens BJJ,Blue
+Wednesday,16:00,17:00,Teens BJJ,Blue
+Thursday,16:00,17:00,Teens BJJ,Blue
+Friday,16:00,17:00,Teens BJJ,Blue
+Saturday,16:00,17:00,Teens BJJ,Blue
+Monday,17:00,18:00,Adult MMA,Black
+Tuesday,17:00,18:00,Adult MMA,Black
+Wednesday,17:00,18:00,Adult MMA,Black
+Thursday,17:00,18:00,Adult MMA,Black
+Friday,17:00,18:00,Adult MMA,Black
+Saturday,17:00,18:00,Adult MMA,Black
+Monday,16:00,18:30,Fighters,Orange
+Wednesday,16:00,18:30,Fighters,Orange
+Friday,16:00,18:30,Fighters,Orange

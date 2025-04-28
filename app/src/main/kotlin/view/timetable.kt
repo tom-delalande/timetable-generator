@@ -55,26 +55,27 @@ fun FlowContent.timetable(timetable: Timetable) = div {
 
     val events = timetable.events
 
-    val relativeEvents = events.sortedWith(compareBy({ it.day }, { it.startTime }))
-        .mapIndexed { index, event ->
-            val indent =
-                events.count { it.startTime < event.startTime && event.startTime < it.endTime && it.day == event.day }
-            val collisions = events.filter { other ->
-                (event.startTime >= other.startTime && event.startTime <= other.startTime.plusMinutes(30) ||
-                        other.startTime >= event.startTime && other.startTime <= event.startTime.plusMinutes(30)) &&
-                        event.day == other.day
-            }.sortedByDescending { Duration.between(it.startTime, it.endTime) }
+    val relativeEvents =
+        events.sortedWith(compareBy({ it.day }, { it.startTime }, { Duration.between(it.startTime, it.endTime).negated() }))
+            .mapIndexed { index, event ->
+                val indent =
+                    events.count { it.startTime < event.startTime && event.startTime < it.endTime && it.day == event.day }
+                val collisions = events.filter { other ->
+                    (event.startTime >= other.startTime && event.startTime <= other.startTime.plusMinutes(30) ||
+                            other.startTime >= event.startTime && other.startTime <= event.startTime.plusMinutes(30)) &&
+                            event.day == other.day
+                }.sortedByDescending { Duration.between(it.startTime, it.endTime) }
 
-            val offset = collisions.indexOf(event)
-            val num = collisions.filter { it.endTime >= event.endTime }.size
+                val offset = collisions.indexOf(event)
+                val num = collisions.filter { it.endTime >= event.endTime }.size
 
-            RelativeEvent(
-                event,
-                index,
-                Collisions(num, offset),
-                indent,
-            )
-        }
+                RelativeEvent(
+                    event,
+                    index,
+                    Collisions(num, offset),
+                    indent,
+                )
+            }
 
     val min = events.minOf { it.startTime }.truncatedTo(ChronoUnit.HOURS)
     val max = events.maxOf { it.endTime }

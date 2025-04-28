@@ -330,7 +330,7 @@ fun File.toEvents(): List<Event> {
                 "zinc",
                 "neutral",
                 "stone",
-                    -> it.get("Colour")
+                    -> it.get("Colour").lowercase()
 
                 "black" -> "stone"
                 else -> "stone"

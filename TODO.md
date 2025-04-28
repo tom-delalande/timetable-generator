@@ -1,10 +1,20 @@
 # Backlog
 
-- Mobile Experience
+Marketing
 - Content Writing
   - Feature list
   - FAQ
   - Purchase CTA
+- Favicon
+- Updated template
+- SEO
+
+Engineering
+- Data Persistence
+- Enable Production
+  - Stripe
+  - Better Stack
+  - Digital Ocean
 
 # Done
 
@@ -17,3 +27,5 @@
 - Footer with support email
 - Payments UX
   - FAQ on edit page
+- Mobile Experience
+- Logging

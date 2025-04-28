@@ -71,7 +71,7 @@ fun FlowContent.hero() = div {
                     p {
                         classes =
                             setOf("mt-8", "text-lg", "font-medium", "text-pretty", "text-gray-500", "sm:text-xl/8")
-                        +"Export directly as an image for free. Or use it interactively and updatable as a dedicated page or component on your website for $15 AUD per month"
+                        +"Interactive, mobile friendly timetable that you can update any time. As a dedicated page or embedded into your website."
                     }
                     div {
                         classes = setOf("mt-10", "flex", "items-center", "justify-center", "gap-x-6")

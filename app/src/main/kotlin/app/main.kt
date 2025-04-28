@@ -3,10 +3,13 @@ package app
 import hero
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
+import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.html.respondHtml
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.request.receiveMultipart
+import io.ktor.server.request.userAgent
 import io.ktor.server.response.header
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondFile
@@ -33,6 +36,7 @@ import kotlinx.html.id
 import kotlinx.html.script
 import kotlinx.html.title
 import org.apache.commons.csv.CSVFormat
+import org.slf4j.event.Level
 import repository.PaymentRepository
 import repository.TimeTableRepository
 import repository.Timetable
@@ -52,6 +56,10 @@ fun main() {
     val paymentRepository = PaymentRepository.InMemory
 
     embeddedServer(Netty, port = 9090) {
+        install(CallLogging) {
+            level = Level.INFO
+        }
+
         routing {
             index()
             downloadExample()

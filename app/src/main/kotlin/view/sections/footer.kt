@@ -24,14 +24,15 @@ fun FlowContent.footer() = footer {
             "lg:px-8"
         )
         div {
-            classes = setOf("flex", "justify-center", "gap-x-6", "md:order-2")
+            classes = setOf("flex", "justify-center", "gap-x-6", "md:order-2", "text-white")
             a {
                 href = "mailto:support@tinyclub.io"
-                classes = setOf("text-gray-400", "hover:text-gray-300")
+                classes = setOf("text-gray-400", "hover:text-gray-300", "flex", "gap-2")
                 span {
                     classes = setOf("sr-only")
                     +"Email"
                 }
+                +"support@tinyclub.io"
                 svg {
                     attributes["fill"] = "none"
                     attributes["viewbox"] = "0 0 24 24"

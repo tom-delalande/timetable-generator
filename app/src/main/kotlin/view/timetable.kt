@@ -263,7 +263,14 @@ fun FlowContent.timetable(timetable: Timetable) = div {
                         "sm:pr-8"
                     )
                     div {
-                        classes = setOf("grid", "grid-cols-7", "text-sm/6", "text-gray-500", "sm:hidden")
+                        classes = setOf(
+//                            "sm:hidden",
+//                            "grid",
+                            "hidden",
+                            "grid-cols-7",
+                            "text-sm/6",
+                            "text-gray-500",
+                        )
                         button {
                             type = ButtonType.button
                             classes = setOf("flex", "flex-col", "items-center", "pb-2", "pt-2")
@@ -315,7 +322,10 @@ fun FlowContent.timetable(timetable: Timetable) = div {
                     div {
                         classes = setOf(
                             "-mr-px",
-                            "hidden",
+                            "grid",
+//                            "sm:grid",
+//                            "hidden",
+
                             "grid-cols-7",
                             "divide-x",
                             "divide-gray-100",
@@ -323,7 +333,6 @@ fun FlowContent.timetable(timetable: Timetable) = div {
                             "border-gray-100",
                             "text-sm/6",
                             "text-gray-500",
-                            "sm:grid"
                         )
                         div {
                             classes = setOf("col-end-1", "w-14")
@@ -462,8 +471,9 @@ fun FlowContent.timetable(timetable: Timetable) = div {
                                 "col-end-2",
                                 "row-start-1",
                                 "grid",
-                                "grid-cols-1",
-                                "sm:grid-cols-7",
+//                                "grid-cols-1",
+//                                "sm:grid-cols-7",
+                                "grid-cols-7",
                                 "sm:pr-8"
                             )
                             attributes["style"] =

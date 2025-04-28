@@ -44,16 +44,50 @@ fun FlowContent.faq() = div {
                     div {
                         div {
                             classes = setOf("text-base/7", "font-semibold", "text-gray-900")
-                            +"How do you make holy water?"
+                            +"How do I update this timetable?"
                         }
                         div {
                             classes = setOf("mt-2", "text-base/7", "text-gray-600")
-                            +"You boil the hell out of it. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas cupiditate laboriosam fugiat."
+                            +"You can come back to this URL at any time to upload a new version of the time table, which will instantly update all instances of the time table."
+                        }
+                    }
+                    div {
+                        div {
+                            classes = setOf("text-base/7", "font-semibold", "text-gray-900")
+                            +"How do I show the timetable on my website?"
+                        }
+                        div {
+                            classes = setOf("mt-2", "text-base/7", "text-gray-600")
+                            +"You can add the HTML snippet to embed the timetable directly into your website, or link to the url provided which will open the timetable in a new page."
+                        }
+                    }
+                    div {
+                        div {
+                            classes = setOf("text-base/7", "font-semibold", "text-gray-900")
+                            +"How do I cancel my subscription?"
+                        }
+                        div {
+                            classes = setOf("mt-2", "text-base/7", "text-gray-600")
+                            +"You can cancel immediately at any time. No questions asked"
+                        }
+                    }
+                    div {
+                        div {
+                            classes = setOf("text-base/7", "font-semibold", "text-gray-900")
+                            +"I have a question, feature request or bug report"
+                        }
+                        div {
+                            classes = setOf("mt-2", "text-base/7", "text-gray-600")
+                            +"Send me an email at "
+                            a {
+                                href = "mailto:support@tinyclub.io"
+                                classes = setOf("font-semibold", "text-indigo-600", "hover:text-indigo-500")
+                                +"support@tinyclub.io"
+                            }
+                            +" and I'll get back to you as quickly as possible"
                         }
                     }
                 }
-
-                // More questions
             }
         }
     }

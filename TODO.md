@@ -1,18 +1,13 @@
 # Backlog
 
 Marketing
-- Content Writing
-  - Feature list
-  - FAQ
-  - Purchase CTA
 - Updated template
 - SEO
 
 Engineering
 - Enable Production
-  - Stripe
-  - Better Stack
   - Digital Ocean
+  - Stripe
 
 # Done
 
@@ -30,3 +25,8 @@ Engineering
 - Cancel
 - Data Persistence
 - Favicon
+- Better Stack
+- Content Writing
+  - Feature list
+  - FAQ
+  - Purchase CTA

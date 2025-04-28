@@ -30,11 +30,14 @@ import kotlinx.html.HTML
 import kotlinx.html.body
 import kotlinx.html.classes
 import kotlinx.html.div
+import kotlinx.html.h1
 import kotlinx.html.head
+import kotlinx.html.header
 import kotlinx.html.id
 import kotlinx.html.link
 import kotlinx.html.script
 import kotlinx.html.title
+import kotlinx.serialization.json.Json
 import org.apache.commons.csv.CSVFormat
 import org.slf4j.event.Level
 import repository.PaymentRepository
@@ -168,20 +171,20 @@ fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepositor
 
             call.respondHtml {
                 index {
-                    div {
-                        classes = setOf("relative overflow-hidden py-16")
+                    header {
+                        classes = setOf("pt-8")
                         div {
-                            classes = setOf("mx-auto max-w-7xl px-6 lg:px-8")
-                            div {
-                                classes = setOf("rounded-xl", "shadow-2xl", "ring-1", "ring-gray-900/10", "pb-4")
-                                timetable(timetable)
+                            classes = setOf("mx-auto max-w-7xl px-4 sm:px-6 lg:px-8")
+                            h1 {
+                                classes = setOf("text-3xl font-bold tracking-tight text-gray-900")
+                                +"Edit Timetable"
                             }
                         }
                     }
+                    timetableWithBorder(timetable)
                     docs(timetable, subscribed)
-                    if (!subscribed) {
-                        faq()
-                    }
+                    faq()
+                    footer()
                 }
             }
         }
@@ -304,9 +307,33 @@ fun File.toEvents(): List<Event> {
             startTime = it.get("Start").let { LocalTime.parse(it) },
             endTime = it.get("End").let { LocalTime.parse(it) },
             title = it.get("Title"),
-            colour = when (it.get("Colour")) {
+            colour = when (it.get("Colour").lowercase()) {
+                "red",
+                "orange",
+                "amber",
+                "yellow",
+                "lime",
+                "green",
+                "emerald",
+                "teal",
+                "cyan",
+                "sky",
+                "blue",
+                "indigo",
+                "violet",
+                "purple",
+                "fuchsia",
+                "pink",
+                "rose",
+                "slate",
+                "gray",
+                "zinc",
+                "neutral",
+                "stone",
+                    -> it.get("Colour")
+
                 "black" -> "stone"
-                else -> it.get("Colour")
+                else -> "stone"
             },
         )
     }

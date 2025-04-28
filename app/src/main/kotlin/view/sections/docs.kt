@@ -307,7 +307,7 @@ fun FlowContent.warning(id: UUID) = div {
                     a {
                         href = "/payments/purchase/timetable/$id"
                         classes = setOf("font-medium text-yellow-700 underline hover:text-yellow-600")
-                        +"Upgrade to keep using it ($15 AUD per month)"
+                        +"Upgrade to keep using it for $15 AUD per month"
                     }
                 }
             }

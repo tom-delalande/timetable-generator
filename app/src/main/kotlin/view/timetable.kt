@@ -553,7 +553,7 @@ fun FlowContent.timetable(timetable: Timetable) = div {
 }
 
 fun FlowContent.timetableWithBorder(timetable: Timetable) = div {
-    classes = setOf("relative overflow-hidden py-16")
+    classes = setOf("relative overflow-hidden py-8")
     div {
         classes = setOf("mx-auto max-w-7xl px-6 lg:px-8")
         div {

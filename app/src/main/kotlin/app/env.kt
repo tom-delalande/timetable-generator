@@ -25,14 +25,14 @@ val Environment = mapOf(
         }.let { P6DataSource(it) }
     ),
     "production" to EnvironmentData(
-        price = "",
-        baseUrl = "",
-        trialEnabled = false,
+        price = "price_1RHnESKOil4fztrBLzXRoQ8O",
+        baseUrl = "https://timetable.tinyclub.io",
+        trialEnabled = true,
         dataSource = SQLiteDataSource().apply {
             url = "jdbc:sqlite:./db/sqlite/data.sqlite"
         }.let { P6DataSource(it) }
     ),
-)[stack] ?: throw IllegalStateException("Invalid 'STACK' variable. Should be 'local' or 'prod', was '$stack'")
+)[stack] ?: throw IllegalStateException("Invalid 'STACK' variable. Should be 'local' or 'production', was '$stack'")
 
 
 fun checkEnv() {

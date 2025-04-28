@@ -22,7 +22,7 @@ fun FlowContent.features() = div {
             }
             p {
                 classes = setOf("mt-6", "text-lg/8", "text-gray-600")
-                +"Lorem ipsum dolor sit amet consect adipisicing elit. Possimus magnam voluptatum cupiditate veritatis in accusamus quisquam."
+                +"Create a beautiful timetable for your gym or business, update it in real time and share it with your customers."
             }
         }
         div {
@@ -64,7 +64,7 @@ fun FlowContent.features() = div {
                         classes = setOf("mt-1", "flex", "flex-auto", "flex-col", "text-base/7", "text-gray-600")
                         p {
                             classes = setOf("flex-auto")
-                            +"Non quo aperiam repellendus quas est est. Eos aut dolore aut ut sit nesciunt. Ex tempora quia. Sit nobis consequatur dolores incidunt."
+                            +"Update the timetable instantly without needing to update your website, a frictionless way to communicate with your customers and reduce confusion"
                         }
                     }
                 }
@@ -92,7 +92,7 @@ fun FlowContent.features() = div {
                                     attributes["stroke-linecap"] = "round"
                                     attributes["stroke-linejoin"] = "round"
                                     attributes["d"] =
-                                        "M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                                        "M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
                                 }
                             }
                         }
@@ -102,7 +102,7 @@ fun FlowContent.features() = div {
                         classes = setOf("mt-1", "flex", "flex-auto", "flex-col", "text-base/7", "text-gray-600")
                         p {
                             classes = setOf("flex-auto")
-                            +"Vero eum voluptatem aliquid nostrum voluptatem. Vitae esse natus. Earum nihil deserunt eos quasi cupiditate. A inventore et molestiae natus."
+                            +"More than just a static page. This is an interactive webpage that shows more information than a simple image."
                         }
                     }
                 }
@@ -141,7 +141,7 @@ fun FlowContent.features() = div {
                         classes = setOf("mt-1", "flex", "flex-auto", "flex-col", "text-base/7", "text-gray-600")
                         p {
                             classes = setOf("flex-auto")
-                            +"Et quod quaerat dolorem quaerat architecto aliquam accusantium. Ex adipisci et doloremque autem quia quam. Quis eos molestiae at iure impedit."
+                            +"Render on all devices, including mobile."
                         }
                     }
                 }

@@ -15,6 +15,7 @@ Marketing
   - Send emails
 
 Engineering
+- Export as image
 - Enable Production
   - Publish to ECR
   - Deploy

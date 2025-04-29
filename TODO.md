@@ -1,13 +1,25 @@
 # Backlog
 
 Marketing
-- Updated template
 - SEO
+  - Title
+  - H1
+  - H2
+- Product Hunt
+- Reddit
+- Hacker News
+- Manual (at least 100)
+  - Create template email
+  - Create spreadsheet of emails and current timetable
+  - Create new timetables
+  - Send emails
 
 Engineering
 - Enable Production
-  - Digital Ocean
-  - Stripe
+  - Publish to ECR
+  - Deploy
+  - Stripe API key
+  - BetterStack API key
 
 # Done
 

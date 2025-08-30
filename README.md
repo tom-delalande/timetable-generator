@@ -14,6 +14,7 @@ or embed it as an iFrame.
 - 📱 Responsive design
 - 💰 Payments using Stripe
 - 📊 Observability using BetterStack
+- 🚢 Deployable using Docker containers
 
 ## Potential Improvements
 - 🌠 Export to PNG
@@ -28,10 +29,11 @@ or embed it as an iFrame.
 2. Run `gradle run`
 4. Open the landing page on [http://localhost:9090](http://localhost:9090) 🚀
 
-### Tech stack
+## Tech stack
 - Kotlin
 - HTML/CSS
 - Tailwind
 - SQLite
 - Stripe
 - BetterStack
+- Docker

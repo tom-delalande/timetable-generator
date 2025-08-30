@@ -1,20 +1,5 @@
 # Backlog
 
-Marketing
-- SEO
-  - Title
-  - H1
-  - H2
-- Product Hunt
-- Reddit
-- Hacker News
-- Manual (at least 100)
-  - Create template email
-  - Create spreadsheet of emails and current timetable
-  - Create new timetables
-  - Send emails
-
-Engineering
 - Export as image
 - Enable Production
   - Publish to ECR

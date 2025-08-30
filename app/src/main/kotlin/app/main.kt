@@ -120,7 +120,7 @@ fun Routing.test() = get("/test") {
     }
 }
 
-val exampleEvents = File("timetables/timetable-converter-example.csv").toEvents()
+val exampleEvents = File("../timetables/timetable-converter-example.csv").toEvents()
 
 fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepository: PaymentRepository) =
     route("/timetable/{id}") {
@@ -191,7 +191,7 @@ fun Routing.timetable(timeTableRepository: TimeTableRepository, paymentRepositor
     }
 
 fun Routing.downloadExample() = get("/timetable-converter-example.csv") {
-    call.respondFile(File("timetables/timetable-converter-example.csv"))
+    call.respondFile(File("../timetables/timetable-converter-example.csv"))
 }
 
 fun Routing.upload(timeTableRepository: TimeTableRepository) = post("/upload") {

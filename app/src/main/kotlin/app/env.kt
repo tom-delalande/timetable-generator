@@ -21,7 +21,7 @@ val Environment = mapOf(
         baseUrl = "http://localhost:9090",
         trialEnabled = true,
         dataSource = SQLiteDataSource().apply {
-            url = "jdbc:sqlite:./db/sqlite/data.sqlite"
+            url = "jdbc:sqlite:../db/data.sqlite"
         }.let { P6DataSource(it) }
     ),
     "production" to EnvironmentData(
@@ -29,7 +29,7 @@ val Environment = mapOf(
         baseUrl = "https://timetable.tinyclub.io",
         trialEnabled = true,
         dataSource = SQLiteDataSource().apply {
-            url = "jdbc:sqlite:./db/sqlite/data.sqlite"
+            url = "jdbc:sqlite:../db/data.sqlite"
         }.let { P6DataSource(it) }
     ),
 )[stack] ?: throw IllegalStateException("Invalid 'STACK' variable. Should be 'local' or 'production', was '$stack'")
